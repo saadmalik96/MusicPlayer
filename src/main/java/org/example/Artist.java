@@ -7,17 +7,33 @@ import java.util.ArrayList;
 
 public class Artist extends Entity {
 
+    String adbid;
+    String mbid;
     public Artist(){
         this.name = "";
+        this.adbid = "0";
+        this.mbid = "0";
     }
     public Artist(String name) {
         super(name);
+        this.adbid = "0";
+        this.mbid = "0";
     }
-
+    public String getAdbid() {
+        return adbid;
+    }
+    public void setAdbid(String adbid) {
+        this.adbid = adbid;
+    }
+    public String getMbid() {
+        return mbid;
+    }
+    public void setMbid(String mbid) {
+        this.mbid = mbid;
+    }
     public String getName() {
         return this.name;
     }
-
 
     public boolean checkDuplicate(Statement statement) {
         try {
@@ -46,9 +62,11 @@ public class Artist extends Entity {
         }
     }
 
-
-
     public String toSQL() {
-        return "insert into artists (name) values (" + "\"" + this.getName() + "\");";
+        return "insert into artists (name, adbid, mbid) values(" +
+                "\"" + this.getName() + "\", "
+                + this.getAdbid() + ", " +
+                "\"" + this.getMbid() + "\"" +
+                ");";
     }
 }

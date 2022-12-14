@@ -11,22 +11,12 @@ import java.sql.SQLException;
 import static org.junit.jupiter.api.Assertions.*;
 
 class AlbumTest {
-
-    @BeforeAll
-    void setup() {
-
-    }
-
     @Test
     void checkDuplicate() {
     }
 
     @Test
     void addAlbumToDB() {
-    }
-
-    @Test
-    void toSQL() {
         Library lib = new Library();
         Connection connection;
         try {
@@ -68,8 +58,17 @@ class AlbumTest {
         }
     }
 
-    @AfterAll
-    void closeDB() {
+    @Test
+    void toSQL() {
+        Album album = new Album("Illmatic");
+        Artist artist = new Artist("Artist");
+        album.setArtist(artist);
+
+        album.setMbid("abcd");
+        album.setAdbid("123");
+
+        System.out.println(album.toSQL());
+
 
     }
 }

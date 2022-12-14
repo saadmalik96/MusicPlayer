@@ -11,6 +11,9 @@ public class Song extends Entity {
     protected String genre;
     protected String mood;
     String year;
+    String adbid;
+    String mbid;
+
 
     public Song() {
         this.name = name;
@@ -20,6 +23,8 @@ public class Song extends Entity {
         this.genre = "";
         this.mood = "";
         this.year = "0";
+        this.adbid = "";
+        this.mbid = "";
     }
 
     public Song(String name) {
@@ -27,9 +32,11 @@ public class Song extends Entity {
         this.album = new Album("");
         this.artist = new Artist("");
         this.genre = "";
+        this.adbid = "";
+        this.mbid = "";
     }
 
-    public Song(String name, String artistName, String albumName, String genre, String mood, String year) {
+    public Song(String name, String artistName, String albumName, String genre, String mood, String year, String adbid, String mbid) {
         this.name = name;
         this.artist = new Artist(artistName);
         this.album = new Album(albumName);
@@ -37,12 +44,13 @@ public class Song extends Entity {
         this.genre = genre;
         this.mood = mood;
         this.year = year;
+        this.adbid = adbid;
+        this.mbid = mbid;
     }
 
     public String getGenre() {
         return genre;
     }
-
     public void setGenre(String genre) {
         this.genre = genre;
     }
@@ -52,10 +60,23 @@ public class Song extends Entity {
     protected void setAlbum(Album album) {
         this.album = album;
     }
-
     public Artist getArtist() {
         return artist;
     }
+    public String getAdbid() {
+        return adbid;
+    }
+    public void setAdbid(String adbid) {
+        this.adbid = adbid;
+    }
+    public String getMbid() {
+        return mbid;
+    }
+    public void setMbid(String mbid) {
+        this.mbid = mbid;
+    }
+
+
 
     public void setArtist(Artist artist) {
         this.artist = artist;
@@ -97,13 +118,15 @@ public class Song extends Entity {
 
 
     public String toSQL() {
-        return "insert into songs(name, artist, album, year, genre, mood) values ("
+        return "insert into songs(name, artist, album, year, genre, mood, adbid, mbid) values ("
                 + "\"" + getName() + "\", "
                 + this.getArtist().getEntityID() + ", "
                 + this.getAlbum().getEntityID() + ", "
                 + this.year + ", "
-                +  "\"" + this.genre + "\","
-                +  "\"" + this.mood + "\""
+                +  "\"" + this.genre + "\", "
+                +  "\"" + this.mood + "\", "
+                + this.adbid + ", "
+                +  "\"" + this.mbid + "\""
                 + ");";
     }
 }

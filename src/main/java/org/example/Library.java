@@ -92,7 +92,13 @@ public class Library {
                 System.out.println((i+1) + ". " + albumName);
             }
             System.out.println("What album would you like to pick? If it isn't in the list enter 0.");
-            int input = Integer.valueOf(sc.nextLine());
+            int input = 0;
+            try {
+                input = Integer.valueOf(sc.nextLine());
+            } catch (NumberFormatException e) {
+                System.out.println("Error: " + e);
+            }
+
 
             if (input == 0) {
                 return;
@@ -208,64 +214,283 @@ public class Library {
             String year = (String)track.get("intYearReleased");
             String genre = (String)track.get("strGenre");
 
+            String trackMBID =  (String) track.get("strMusicBrainzID");
+            String trackADBID =  (String) track.get("idTrack");
+            String albumMBID =  (String) track.get("strMusicBrainzAlbumID");
+            String albumADBID =  (String) track.get("idAlbum");
+            String artistMBID =  (String) track.get("strMusicBrainzArtistID");
+            String artistADBID =  (String) track.get("idArtist");
+
+            if (mood == null || year == null || mood.equals("...")) {
+                String yearAndMood = getYearMood(albumADBID);
+                String[] YMArray = yearAndMood.split(",");
+                year = YMArray[0];
+                mood = YMArray[1];
+            }
+
             System.out.println(trackName + " " + artistName + " " + albumName + " " + mood + " " + year + " " + genre);
-            Song song = new Song(trackName, artistName, albumName, genre, mood, year);
+            Song song = new Song(trackName, artistName, albumName, genre, mood, year, trackADBID, trackMBID);
+
+            song.getArtist().setAdbid(artistADBID);
+            song.getArtist().setMbid(artistMBID);
+            song.getAlbum().setAdbid(albumADBID);
+            song.getAlbum().setMbid(albumMBID);
+
             song.addSongtoDB(this.statement, this.statement1);
+            this.addSong(song);
 
         } catch(ParseException e) {
             System.out.println("Error parsing JSON");
         }
     }
 
-    public void addSongManually() {
-        Scanner sc = new Scanner(System.in);
-        System.out.println("Enter the following information seperated by just commas (no spaces): ");
-        System.out.println("Song, Artist, Album, Genre, and Mood, Year. \n" +
-                "(You can leave out any information except the song name.)");
-        String input = sc.nextLine();
-        String[] inputArray = input.split("[,]", 0);
-        for(String myStr: inputArray) {
-            System.out.println(myStr);
+    public void addSongTrackandArtist(String songName, String artistName) {
+        artistName = artistName.toLowerCase();
+        artistName = artistName.replaceAll(" ", "_");
+        songName = songName.toLowerCase();
+        songName = songName.replaceAll(" ", "_");
+
+        String requestURL = "https://theaudiodb.com/api/v1/json/523532/searchtrack.php?s=" + artistName + "&t=" + songName;
+        StringBuilder response = connection(requestURL);
+        try {
+            JSONParser parser = new JSONParser();
+            Object obj = parser.parse(response.toString());
+            JSONObject jsonObject = (JSONObject) obj;
+            JSONArray tracks = (JSONArray) jsonObject.get("track");
+            JSONObject track = (JSONObject) tracks.get(0); // get the list of all tracks returned.
+
+            System.out.println(track.get("strTrack"));
+            System.out.println(track.get("strArtist"));
+            System.out.println(track.get("strAlbum"));
+            System.out.println(track.get("strMood"));
+            System.out.println(track.get("intYearReleased"));
+            System.out.println(track.get("strGenre"));
+
+            String trackName = (String) track.get("strTrack");
+            artistName = (String)track.get("strArtist");
+            String albumName = (String)track.get("strAlbum");
+            String mood = (String)track.get("strMood");
+            String year = (String)track.get("intYearReleased");
+            String genre = (String)track.get("strGenre");
+
+            String trackMBID =  (String) track.get("strMusicBrainzID");
+            String trackADBID =  (String) track.get("idTrack");
+            String albumMBID =  (String) track.get("strMusicBrainzAlbumID");
+            String albumADBID =  (String) track.get("idAlbum");
+            String artistMBID =  (String) track.get("strMusicBrainzArtistID");
+            String artistADBID =  (String) track.get("idArtist");
+
+            if (mood == null || year == null || mood.equals("...")) {
+                String yearAndMood = getYearMood(albumADBID);
+                String[] YMArray = yearAndMood.split(",");
+                year = YMArray[0];
+                mood = YMArray[1];
+            }
+
+            System.out.println(trackName + " " + artistName + " " + albumName + " " + mood + " " + year + " " + genre);
+            Song song = new Song(trackName, artistName, albumName, genre, mood, year, trackADBID, trackMBID);
+
+            song.getArtist().setAdbid(artistADBID);
+            song.getArtist().setMbid(artistMBID);
+            song.getAlbum().setAdbid(albumADBID);
+            song.getAlbum().setMbid(albumMBID);
+
+
+            song.addSongtoDB(this.statement, this.statement1);
+            this.addSong(song);
+        } catch(ParseException e) {
+            System.out.println("Error parsing JSON");
+        } catch (NullPointerException e) {
+            System.out.println("Error: " + e);
         }
 
-        String songName = inputArray[0];
-        String artistName = inputArray[1];
-        String albumName = inputArray[2];
-        String genre = inputArray[3];
-        String mood = inputArray[4];
-        String year = inputArray[5];
-
-        if (artistName.equals("")) {
-            artistName = "Unknown";
-        }
-        if (albumName.equals("")) {
-            albumName = "Unknown";
-        }
-        if (genre.equals("")) {
-            genre = "Unknown";
-        }
-
-
-
-        Song song = new Song(songName,artistName,albumName,genre,mood,year);
-        song.addSongtoDB(statement, statement1);
     }
+
+    public void addAnAlbum(String artistName, String albumName) {
+        artistName = artistName.toLowerCase();
+        artistName = artistName.replaceAll(" ", "_");
+        albumName = albumName.toLowerCase();
+        albumName = albumName.replaceAll(" ", "_");
+
+        String requestURL = "theaudiodb.com/api/v1/json/523532/searchalbum.php?s=" + artistName + "&a=" + albumName;
+        StringBuilder response = connection(requestURL);
+        try {
+            JSONParser parser = new JSONParser();
+            Object obj = parser.parse(response.toString());
+            JSONObject jsonObject = (JSONObject) obj;
+            JSONArray tracks = (JSONArray) jsonObject.get("album");
+            JSONObject track = (JSONObject) tracks.get(0); // get the list of all tracks returned.
+
+            //Remove these souts
+            System.out.println(track.get("strTrack"));
+            System.out.println(track.get("strArtist"));
+            System.out.println(track.get("strAlbum"));
+            System.out.println(track.get("strMood"));
+            System.out.println(track.get("intYearReleased"));
+            System.out.println(track.get("strGenre"));
+
+            String trackName = (String) track.get("strTrack");
+            artistName = (String)track.get("strArtist");
+            albumName = (String)track.get("strAlbum");
+            String mood = (String)track.get("strMood");
+            String year = (String)track.get("intYearReleased");
+            String genre = (String)track.get("strGenre");
+
+            String trackMBID =  (String) track.get("strMusicBrainzID");
+            String trackADBID =  (String) track.get("idTrack");
+            String albumMBID =  (String) track.get("strMusicBrainzAlbumID");
+            String albumADBID =  (String) track.get("idAlbum");
+            String artistMBID =  (String) track.get("strMusicBrainzArtistID");
+            String artistADBID =  (String) track.get("idArtist");
+
+
+            if (mood == null || year == null || mood.equals("...")) {
+                String yearAndMood = getYearMood(albumADBID);
+                String[] YMArray = yearAndMood.split(",");
+                year = YMArray[0];
+                mood = YMArray[1];
+            }
+
+            System.out.println(trackName + " " + artistName + " " + albumName + " " + mood + " " + year + " " + genre);
+            Song song = new Song(trackName, artistName, albumName, genre, mood, year, trackADBID, trackMBID);
+
+            song.getArtist().setAdbid(artistADBID);
+            song.getArtist().setMbid(artistMBID);
+            song.getAlbum().setAdbid(albumADBID);
+            song.getAlbum().setMbid(albumMBID);
+
+
+            song.addSongtoDB(this.statement, this.statement1);
+            this.addSong(song);
+        } catch(ParseException e) {
+            System.out.println("Error parsing JSON");
+        } catch (NullPointerException e) {
+            System.out.println("Error: " + e);
+        }
+
+    }
+
+//    public void addSongManually() {
+//        Scanner sc = new Scanner(System.in);
+//        System.out.println("Enter the following information seperated by just commas (no spaces): ");
+//        System.out.println("Song, Artist, Album, Genre, and Mood, Year. \n" +
+//                "(You can leave out any information except the song name.)");
+//        String input = sc.nextLine();
+//        String[] inputArray = input.split("[,]", 0);
+//        for(String myStr: inputArray) {
+//            System.out.println(myStr);
+//        }
+//
+//        String songName = inputArray[0];
+//        String artistName = inputArray[1];
+//        String albumName = inputArray[2];
+//        String genre = inputArray[3];
+//        String mood = inputArray[4];
+//        String year = inputArray[5];
+//
+//        if (artistName.equals("")) {
+//            artistName = "Unknown";
+//        }
+//        if (albumName.equals("")) {
+//            albumName = "Unknown";
+//        }
+//        if (genre.equals("")) {
+//            genre = "Unknown";
+//        }
+//        if (mood.equals("")) {
+//            mood = "Unknown";
+//        }
+//        if (year.equals("")) {
+//            year = "0";
+//        }
+//
+//        Song song = new Song(songName,artistName,albumName,genre,mood,year);
+//        song.addSongtoDB(statement, statement1);
+//    }
+
+    /*
+    1. Add a song:
+            --
+       Ok what do you have?
+        1. Artist name and track name
+        2. Just the artist name.
+        3. Album name
+
+     */
+
 
     public void userInput(String input) {
         Scanner sc = new Scanner(System.in);
-        System.out.println("");
 
         if (input.equals("exit")) {
             return;
         } else if (input.equals("1")) {
-            addSongManually();
+            userSearch();
+        } else if (input.equals("2")) {
+            viewSongs();
         }
-
     }
+
+    public String getYearMood(String albumID) {
+        String requestURL = "https://theaudiodb.com/api/v1/json/523532/album.php?m=" + albumID;
+        StringBuilder response = connection(requestURL);
+        try {
+            JSONParser parser = new JSONParser();
+            Object obj = parser.parse(response.toString());
+            JSONObject jsonObject = (JSONObject) obj;
+            JSONArray tracks = (JSONArray) jsonObject.get("album");
+            JSONObject track = (JSONObject) tracks.get(0); // get the list of all tracks returned.
+
+            String year = (String) track.get("intYearReleased");
+            String mood = (String) track.get("strMood");
+            return year +"," + mood;
+
+        } catch(ParseException e) {
+            System.out.println("Error parsing JSON");
+        } catch (NullPointerException e) {
+            System.out.println("Error: " + e);
+        }
+        return null;
+    }
+
+    public void userSearch() {
+        Scanner sc = new Scanner(System.in);
+        String input = "";
+
+        System.out.println("What would you like to search with? \n" +
+                "1. I'd like to explore an artist. \n" +
+                "2. I already know the artist and song name. \n" +
+                "3. I want to add an entire album!");
+
+        input = sc.nextLine();
+        if (input.equals("exit")) {
+            return;
+        } else if (input.equals("1")) {
+            System.out.print("What is the artist's name? ");
+            input = sc.nextLine();
+            searchArtist(input);
+        } else if (input.equals("2")) {
+            System.out.print("What is the artist's name? ");
+            String artistName = sc.nextLine();
+            System.out.print("\nWhat is the song name? ");
+            String songName = sc.nextLine();
+            addSongTrackandArtist(songName, artistName);
+        } else if (input.equals("3")) {
+            System.out.print("What is the artist's name? ");
+            String artistName = sc.nextLine();
+            System.out.print("\nWhat is the album name? ");
+            String albumName = sc.nextLine();
+            addAnAlbum(artistName, albumName);
+        }
+    }
+
+
+
+
 
     public static void main (String[] args) {
         Library lib = new Library();
-        //System.out.println(lib.searchAlbum("2115030"));
+
 
         Connection connection;
         try {
@@ -278,11 +503,11 @@ public class Library {
             lib.statement.executeUpdate("drop table if exists songs");
             lib.statement.executeUpdate("drop table if exists albums");
             lib.statement.executeUpdate("drop table if exists artists");
-            lib.statement.executeUpdate("create table songs (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, name TEXT, artist INTEGER, album INTEGER, year INTEGER, genre TEXT, mood TEXT)");
-            lib.statement.executeUpdate("create table artists (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, name TEXT)");
-            lib.statement.executeUpdate("create table albums (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, name TEXT, artist INTEGER)");
-
+            lib.statement.executeUpdate("create table songs (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, name TEXT, artist INTEGER, album INTEGER, year INTEGER, genre TEXT, mood TEXT, adbid INTEGER, mbid TEXT)");
+            lib.statement.executeUpdate("create table artists (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, name TEXT, adbid INTEGER, mbid TEXT)");
+            lib.statement.executeUpdate("create table albums (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, name TEXT, artist INTEGER, adbid INTEGER, mbid TEXT)");
             System.out.println("\n-------------- Welcome to your Music Player ---------------\n");
+
             Scanner sc = new Scanner(System.in);
             String input = "";
 
@@ -290,22 +515,18 @@ public class Library {
                 System.out.println("------------------------ Main Menu ------------------------");
                 System.out.println("What would you like to do? Type 'exit' to exit the program.");
                 System.out.println("" +
-                        "1. Add a song manually. \n" +
-                        "2. Remove a song. \n" +
-                        "3. View your song library. \n" +
-                        "4. View your artists. \n" +
-                        "5. View your albums. \n" +
-                        "6. Add song via Search. \n" +
-                        "7. Generate a playlist based on mood, genre or era. \n" +
+                        "1. Add a song. \n" +
+                        "2. View your song library. \n" +
+                        "3. View your artists. \n" +
+                        "4. View your albums. \n" +
+                        "5. Generate a playlist based on mood, genre or era. \n" +
+                        "6. Statistics. \n" +
                         "--------------------------------------------------");
                 System.out.print("Input: ");
                 input = sc.nextLine();
                 lib.userInput(input);
 
-
             }
-
-
 
 
             lib.statement.close();

@@ -47,12 +47,11 @@ class ArtistTest {
 
     @Test
     void toSQL() {
-        String test = "Halftime,Nas,Illmatic, ,";
-        String[] res = test.split("[,]", 0);
-        for(String myStr: res) {
-            System.out.println(myStr);
-        }
-        System.out.println(res[1]);
+        Artist artist = new Artist("Nas");
+        artist.setMbid("asd");
+        artist.setAdbid("1234");
+
+        System.out.println(artist.toSQL());
 
     }
 }
