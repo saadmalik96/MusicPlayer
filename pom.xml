@@ -10,7 +10,6 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
-        <!-- JUnit 5 requires Surefire version 2.22.0 or higher -->
         <version>2.22.0</version>
       </plugin>
       <plugin>
@@ -37,13 +36,13 @@
   <packaging>jar</packaging>
 
 
-
-
   <name>untitled</name>
   <url>http://maven.apache.org</url>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <maven.compiler.source>1.8</maven.compiler.source>
+    <maven.compiler.target>1.8</maven.compiler.target>
   </properties>
 
   <dependencies>
