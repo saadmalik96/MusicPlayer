@@ -125,7 +125,7 @@ class AlbumTest {
         Album album = new Album("Illmatic");
         Artist artist = new Artist("Artist");
         album.setArtist(artist);
-
+        album.getArtist().setEntityID(3);
         album.setMbid("abcd");
         album.setAdbid("123");
 

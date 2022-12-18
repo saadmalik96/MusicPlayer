@@ -100,6 +100,8 @@ class SongTest {
     void toSQL() {
         Song song = new Song("Halftime", "Nas", "Illmatic", "Hip-Hop", "Energetic", "1994", "92831", "2awe12");
         System.out.println(song.toSQL());
+        song.getAlbum().setEntityID(3);
+        song.getArtist().setEntityID(2);
         assertEquals("insert into songs(name, artist, album, year, genre, mood, adbid, mbid) values (\"Halftime\", 2, 3, 1994, \"Hip-Hop\", \"Energetic\", 92831, \"2awe12\");", song.toSQL());
     }
 }
