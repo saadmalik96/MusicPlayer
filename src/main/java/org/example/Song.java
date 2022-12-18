@@ -81,6 +81,12 @@ public class Song extends Entity {
     public void setArtist(Artist artist) {
         this.artist = artist;
     }
+
+    /**
+     * Add a song, it's artist and it's album to the database (given it doesn't already exist).
+     * @param statement
+     * @param statement1
+     */
     public void addSongtoDB(Statement statement, Statement statement1) {
         try {
             String artistName = this.getName();
@@ -94,13 +100,19 @@ public class Song extends Entity {
                 statement.executeUpdate(this.toSQL());
                 ResultSet rs = statement.executeQuery("select * from songs where name = \"" + this.getName() + "\"");
                 this.setEntityID(rs.getInt("id"));
-                System.out.println("Added new song. Name: " + this.getName() + " | id: " + this.getEntityID());
             }
         } catch (SQLException e) {
             System.out.println(e);
         }
     }
 
+
+    /**
+     * Method for checking whether a specific song exists in the database or not. Check on song name and artist name.
+     * @param statement
+     * @param statement1
+     * @return
+     */
     public boolean checkDuplicateSong(Statement statement, Statement statement1) {
         try {
             ResultSet rs = statement.executeQuery("select * from songs where name = \"" + this.getName() +"\"");
@@ -117,6 +129,10 @@ public class Song extends Entity {
     }
 
 
+    /**
+     * Method for generating SQL query to add a song to the database.
+     * @return
+     */
     public String toSQL() {
         return "insert into songs(name, artist, album, year, genre, mood, adbid, mbid) values ("
                 + "\"" + getName() + "\", "

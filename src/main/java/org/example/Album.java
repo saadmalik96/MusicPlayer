@@ -45,6 +45,13 @@ public class Album extends Entity {
     public void setArtist(Artist artist) {
         this.artist = artist;
     }
+
+
+    /**
+     * Checks whether an album already exists in the database.
+     * @param statement
+     * @return
+     */
     public boolean checkDuplicate(Statement statement) {
         try {
             ResultSet rs = statement.executeQuery("select * from albums where name = \"" + this.getName() +"\"");
@@ -53,13 +60,18 @@ public class Album extends Entity {
             throw new RuntimeException(e);
         }
     }
+
+
+    /**
+     * Adds an album to the database (given it doesn't already exist).
+     * @param statement
+     */
     public void addAlbumToDB(Statement statement) {
         try {
             String albumName = this.getName();
             if (checkDuplicate(statement)) {
                 ResultSet rs = statement.executeQuery("select * from albums where name = \"" + this.getName() + "\"");
                 this.setEntityID(rs.getInt("id"));
-                System.out.println("Album already exists in database.");
             } else {
                 this.getArtist().addArtistToDB(statement);
                 statement.executeUpdate(this.toSQL());
@@ -67,14 +79,16 @@ public class Album extends Entity {
                 this.setEntityID(rs.getInt("id"));
                 this.setMbid(rs.getString("mbid"));
                 this.setAdbid(rs.getString("adbid"));
-                System.out.println("Added new album. Name: " + this.getName() + " | id: " + this.getEntityID());
             }
         } catch (SQLException e) {
             System.out.println("Error: " + e);
         }
     }
 
-
+    /**
+     * Method for generating SQL query to add an album to the database.
+     * @return
+     */
     public String toSQL() {
         return "insert into albums (name, artist, adbid, mbid) values ("
                 + "\"" + this.getName() + "\""
